@@ -13,7 +13,7 @@ const downloadBtn = document.getElementById('download');
 const { body } = document;
 
 // Global Variables
-const canvas =document.createElement('canvas');
+const canvas = document.createElement('canvas');
 canvas.id = 'canvas';
 const context = canvas.getContext('2d');
 let currentSize = 10;
@@ -35,12 +35,13 @@ function displayBrushSize() {
 // Setting Brush Size
 brushSlider.addEventListener('change', () => {
   currentSize = brushSlider.value;
+  displayBrushSize();
 });
 
 // Setting Brush Color
 brushColorBtn.addEventListener('change', () => {
   isEraser = false;
-  currentColor = `#${brushColorBtn.value}`
+  currentColor = `#${brushColorBtn.value}`;
 });
 
 // Setting Background Color
@@ -77,7 +78,7 @@ function createCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - 50;
   context.fillStyle = bucketColor;
-  context.fillRect(0,0, canvas.width, canvas.height   );
+  context.fillRect(0, 0, canvas.width, canvas.height);
   body.appendChild(canvas);
   switchToBrush();
 }
@@ -117,7 +118,6 @@ function storeDrawn(x, y, size, color, erase) {
     color,
     erase,
   };
-  console.log(line);
   drawnArray.push(line);
 }
 
@@ -134,7 +134,6 @@ function getMousePosition(event) {
 canvas.addEventListener('mousedown', (event) => {
   isMouseDown = true;
   const currentPosition = getMousePosition(event);
-  console.log('mouse is clicked', currentPosition);
   context.moveTo(currentPosition.x, currentPosition.y);
   context.beginPath();
   context.lineWidth = currentSize;
@@ -146,7 +145,6 @@ canvas.addEventListener('mousedown', (event) => {
 canvas.addEventListener('mousemove', (event) => {
   if (isMouseDown) {
     const currentPosition = getMousePosition(event);
-    console.log('mouse is moving', currentPosition);
     context.lineTo(currentPosition.x, currentPosition.y);
     context.stroke();
     storeDrawn(
@@ -164,44 +162,46 @@ canvas.addEventListener('mousemove', (event) => {
 // Mouse Up
 canvas.addEventListener('mouseup', () => {
   isMouseDown = false;
-  console.log('mouse is unclicked');
 });
 
-// // Save to Local Storage
-// saveStorageBtn.addEventListener('click', () => {
+// Save to Local Storage
+saveStorageBtn.addEventListener('click', () => {
+  localStorage.setItem('savedCanvas', JSON.stringify(drawnArray));
+  // Active Tool
+  activeToolEl.textContent = 'Canvas Saved';
+  setTimeout(switchToBrush, 1500);
+});
 
-//   // Active Tool
-//   activeToolEl.textContent = 'Canvas Saved';
-//   setTimeout(switchToBrush, 1500);
-// });
+// Load from Local Storage
+loadStorageBtn.addEventListener('click', () => {
+  if (localStorage.getItem('savedCanvas')) {
+    drawnArray = JSON.parse(localStorage.savedCanvas);
+    restoreCanvas();
+  // Active Tool
+    activeToolEl.textContent = 'Canvas Loaded';
+    setTimeout(switchToBrush, 1500);
+  } else {
+    activeToolEl.textContent = 'No Canvas Found';
+    setTimeout(switchToBrush, 1500);
+  }
+});
 
-// // Load from Local Storage
-// loadStorageBtn.addEventListener('click', () => {
-//   if (localStorage.) {
-//     drawnArray = JSON(localStorage.);
+// Clear Local Storage
+clearStorageBtn.addEventListener('click', () => {
+  localStorage.removeItem('savedCanvas');
+  // Active Tool
+  activeToolEl.textContent = 'Local Storage Cleared';
+  setTimeout(switchToBrush, 1500);
+});
 
-//   // Active Tool
-//     activeToolEl.textContent = 'Canvas Loaded';
-//     setTimeout(switchToBrush, 1500);
-//   } 
-
-// });
-
-// // Clear Local Storage
-// clearStorageBtn.addEventListener('click', () => {
-
-//   // Active Tool
-//   activeToolEl.textContent = 'Local Storage Cleared';
-//   setTimeout(switchToBrush, 1500);
-// });
-
-// // Download Image
-// downloadBtn.addEventListener('click', () => {
-
-//   // Active Tool
-//   activeToolEl.textContent = 'Image File Saved';
-//   setTimeout(switchToBrush, 1500);
-// });
+// Download Image
+downloadBtn.addEventListener('click', () => {
+  downloadBtn.href = canvas.toDataURL('image/jpeg', 1);
+  downloadBtn.download = 'paint-example.jpeg';
+  // Active Tool
+  activeToolEl.textContent = 'Image File Saved';
+  setTimeout(switchToBrush, 1500);
+});
 
 // Event Listener
 brushIcon.addEventListener('click', switchToBrush);
